@@ -22,6 +22,7 @@ class Video:
         scene_list = sm.get_scene_list()
         self.scenes = [Scene(video_path, scene_idx, scene_list[scene_idx]) for scene_idx in range(len(scene_list))]
         self.set_frames()
+        print("frames set")
         self.embedd_scenes()
         print("Initiated")
 

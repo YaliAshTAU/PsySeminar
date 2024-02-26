@@ -4,6 +4,7 @@ from transformers import CLIPProcessor
 from PIL import Image
 import torch
 import uuid
+import os
 
 
 class Scene:
@@ -19,8 +20,10 @@ class Scene:
         self.cap  = cv2.VideoCapture(video_path)
         self.scene_clip_embeddings = []
 
-    def save_tensor(self, t):
-        path = f'/tmp/{uuid.uuid4()}'
+    def save_tensor(self, t, directory='saved_tensors'):
+        os.makedirs(directory, exist_ok=True)  # Ensure the directory exists
+        filename = str(uuid.uuid4()) + '.pt'    # Generate a unique filename
+        path = os.path.join(directory, filename) # Construct the full path
         torch.save(t, path)
         return path
     
@@ -52,6 +55,7 @@ class Scene:
             clip_pixel_values = self.clip_embeddings(pil_image)
             pixel_tensors.append(clip_pixel_values)
             avg_tensor = torch.mean(torch.stack(pixel_tensors), dim=0)
+            print("Tensor shape: ", avg_tensor.shape)
             self.scene_clip_embeddings.append(self.save_tensor(avg_tensor))
 
     
