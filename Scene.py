@@ -5,6 +5,7 @@ import torch
 import uuid
 import os
 import matplotlib.pyplot as plt
+from collections import Counter
 
 
 class Scene:
@@ -27,8 +28,7 @@ class Scene:
         return path
     
     def set_frames_for_scene(self):
-        #cap = cv2.VideoCapture(self.video_path)
-        no_of_samples = 2 # number of samples per scene
+        no_of_samples = 5 # number of samples per scene
         scene_length = abs(self.scene[0].frame_num - self.scene[1].frame_num)
         every_n = round(scene_length/no_of_samples)
         samples = [(every_n * n) + self.scene[0].frame_num for n in range(no_of_samples)]     
@@ -42,38 +42,45 @@ class Scene:
         return input_tokens['pixel_values']
     
     def get_prediction(self, clip_processor, clip_model, classes):
+        frame_labels = []
         inputs = clip_processor(text=classes, return_tensors="pt", padding=True)
         for tensor in self.scene_clip_embeddings:
-            tensor = torch.load(tensor)
+            #tensor = torch.load(tensor)
             inputs['pixel_values'] = tensor   
             outputs = clip_model(**inputs)
             logits_per_image = outputs.logits_per_image
             probs = logits_per_image.softmax(dim=1)
+            highest_score_idx = probs.argmax(dim=1).item()  # Get the index of the highest score
+            frame_labels.append(classes[highest_score_idx])  # Append the corresponding class label
         
-        for i in range(len(self.scene_clip_embeddings)):
-            plt.barh(range(len(probs[0].detach().numpy())),probs[i].detach().numpy(), tick_label=classes)
-            plt.xlim(0,1.0)
-            plt.subplots_adjust(left=0.1,
-                                bottom=0.1,
-                                right=0.9,
-                                top=0.9,
-                                wspace=0.2,
-                                hspace=0.8)
-        plt.show()
+        # for i in range(len(self.scene_clip_embeddings)):
+            # plt.barh(range(len(probs[0].detach().numpy())),probs[i].detach().numpy(), tick_label=classes)
+            # plt.xlim(0,1.0)
+            # plt.subplots_adjust(left=0.1,
+            #                     bottom=0.1,
+            #                     right=0.9,
+            #                     top=0.9,
+            #                     wspace=0.2,
+            #                     hspace=0.8)
+            # plt.show()
+        most_common_label = Counter(frame_labels).most_common(1)[0][0]
+        print(f"Most common label for scene {self.scene_idx}: {most_common_label}")
+        print(frame_labels)
 
     def embed_scene(self, clip_processor):
         print("embedding scene #", self.scene_idx)
         pixel_tensors = [] # holds all of the clip embeddings for each of the samples
         for frame_sample in self.frames:
-            self.cap.set(1, frame_sample)
+            self.cap.set(cv2.CAP_PROP_POS_FRAMES, frame_sample)
             ret, frame = self.cap.read()
             if not ret:
                 print('failed to read', ret, frame_sample, self.scene_idx, frame)
                 return
             pil_image = Image.fromarray(frame)
             clip_pixel_values = self.clip_embeddings(pil_image, clip_processor)
-            pixel_tensors.append(clip_pixel_values)
-        avg_tensor = torch.mean(torch.stack(pixel_tensors), dim=0)
-        self.scene_clip_embeddings.append(self.save_tensor(avg_tensor))
+            self.scene_clip_embeddings.append(clip_pixel_values)
+            # pixel_tensors.append(clip_pixel_values)
+        # avg_tensor = torch.mean(torch.stack(pixel_tensors), dim=0)
+        # self.scene_clip_embeddings.append(self.save_tensor(avg_tensor))
 
     
