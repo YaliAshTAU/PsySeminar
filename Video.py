@@ -38,8 +38,6 @@ class Video:
         print("Initiated")
         self.predict()
 
-    
-
     def print_scenes(self):
         for i, scene in enumerate(self.scenes, start=1):
             print(f"Scene {i}: {scene.scene}")
