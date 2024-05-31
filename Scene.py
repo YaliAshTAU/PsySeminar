@@ -1,10 +1,10 @@
 import scenedetect as sd
 import cv2
-from transformers import CLIPProcessor
 from PIL import Image
 import torch
 import uuid
 import os
+import matplotlib.pyplot as plt
 
 
 class Scene:
@@ -16,7 +16,6 @@ class Scene:
         self.scene_idx = scene_idx
         self.scene = scene
         self.frames = None
-        self.clip_processor = clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
         self.cap  = cv2.VideoCapture(video_path)
         self.scene_clip_embeddings = []
 
@@ -29,33 +28,52 @@ class Scene:
     
     def set_frames_for_scene(self):
         #cap = cv2.VideoCapture(self.video_path)
-        no_of_samples = 5 # number of samples per scene
+        no_of_samples = 2 # number of samples per scene
         scene_length = abs(self.scene[0].frame_num - self.scene[1].frame_num)
         every_n = round(scene_length/no_of_samples)
         samples = [(every_n * n) + self.scene[0].frame_num for n in range(no_of_samples)]     
         self.frames = samples
 
-    def clip_embeddings(self, image):
-        inputs = self.clip_processor(images=image, return_tensors="pt", padding=True)
+    def clip_embeddings(self, image, clip_processor):
+        inputs = clip_processor(images=image, return_tensors="pt", padding=True)
         input_tokens = {
             k: v for k, v in inputs.items()
         }
         return input_tokens['pixel_values']
     
+    def get_prediction(self, clip_processor, clip_model, classes):
+        inputs = clip_processor(text=classes, return_tensors="pt", padding=True)
+        for tensor in self.scene_clip_embeddings:
+            tensor = torch.load(tensor)
+            inputs['pixel_values'] = tensor   
+            outputs = clip_model(**inputs)
+            logits_per_image = outputs.logits_per_image
+            probs = logits_per_image.softmax(dim=1)
+        
+        for i in range(len(self.scene_clip_embeddings)):
+            plt.barh(range(len(probs[0].detach().numpy())),probs[i].detach().numpy(), tick_label=classes)
+            plt.xlim(0,1.0)
+            plt.subplots_adjust(left=0.1,
+                                bottom=0.1,
+                                right=0.9,
+                                top=0.9,
+                                wspace=0.2,
+                                hspace=0.8)
+        plt.show()
 
-    def embedd_scene(self):
+    def embed_scene(self, clip_processor):
+        print("embedding scene #", self.scene_idx)
         pixel_tensors = [] # holds all of the clip embeddings for each of the samples
         for frame_sample in self.frames:
             self.cap.set(1, frame_sample)
             ret, frame = self.cap.read()
             if not ret:
                 print('failed to read', ret, frame_sample, self.scene_idx, frame)
-                break
+                return
             pil_image = Image.fromarray(frame)
-            clip_pixel_values = self.clip_embeddings(pil_image)
+            clip_pixel_values = self.clip_embeddings(pil_image, clip_processor)
             pixel_tensors.append(clip_pixel_values)
-            avg_tensor = torch.mean(torch.stack(pixel_tensors), dim=0)
-            print("Tensor shape: ", avg_tensor.shape)
-            self.scene_clip_embeddings.append(self.save_tensor(avg_tensor))
+        avg_tensor = torch.mean(torch.stack(pixel_tensors), dim=0)
+        self.scene_clip_embeddings.append(self.save_tensor(avg_tensor))
 
     
