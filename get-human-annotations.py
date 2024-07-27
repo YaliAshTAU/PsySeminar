@@ -26,7 +26,7 @@ def get_human_annotation(ann_dir, type):
 
 
 def get_annotation_by_index(annotations_list, index):
-    return True if annotations_list[index] != 0 else False
+    return annotations_list[index][0] != 0
 
 
 def get_annotation_lists(movie_path, new_path, annotations):
@@ -47,7 +47,7 @@ def get_annotation_lists(movie_path, new_path, annotations):
     blip_classifications = []
     human_annotations = []
 
-    while cap.isOpened():
+    while cap.isOpened() and count_annotation_frames < len(annotations):
         ret, frame = cap.read()
         if not ret:
             break
@@ -65,12 +65,12 @@ def get_annotation_lists(movie_path, new_path, annotations):
             blip_classification = True if get_blip_classification(pil_image) == 'yes' else False
             blip_classifications.append(blip_classification) #changes
 
-            human_annotation = get_annotation_by_index(annotations, count_annotation_frames)
+            human_annotation = get_annotation_by_index(annotations, count_annotation_frames - 1)
             human_annotations.append(human_annotation)
 
             is_correct = human_annotation == blip_classification
-            if count_annotation_frames % 200: # save every 200 images to check
-                pil_image.save('./{count_annotation_frames}-{human_annotation}-{blip_classification}')
+            # if count_annotation_frames % 200: # save every 200 images to check
+            #     pil_image.save('./{count_annotation_frames}-{human_annotation}-{blip_classification}')
             print('annotation #:',count_annotation_frames, is_correct)
             # print('frame:', count_annotation_frames, 'human:', human_annotation, 'blip:', blip_classification)
 
@@ -79,7 +79,7 @@ def get_annotation_lists(movie_path, new_path, annotations):
     return blip_classifications, human_annotations
 
 def get_accuracy(blip_classifications, human_annotations):
-    return [blip_classifications[i] == human_annotations[i] for i in range(len(blip_classifications))].count(True) // len(blip_classifications)
+    return [blip_classifications[i] == human_annotations[i] for i in range(len(blip_classifications))].count(True) / len(blip_classifications)
 
 
 if __name__ == '__main__':
