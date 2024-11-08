@@ -28,8 +28,11 @@ def get_human_annotation(ann_dir, type):
 def get_annotation_by_index(annotations_list, index):
     return annotations_list[index][0] != 0
 
+def get_pre_loaded_blip_classification(image):
+    return 
 
-def get_annotation_lists(movie_path, new_path, annotations):
+
+def get_annotation_lists(movie_path, annotations):
     print('getting annotations list')
     print('number of annotations:', len(annotations))
     get_blip_classification = get_blip_classifier()
@@ -63,19 +66,17 @@ def get_annotation_lists(movie_path, new_path, annotations):
             count_seconds = 0
             pil_image = Image.fromarray(frame)
             blip_classification = True if get_blip_classification(pil_image) == 'yes' else False
-            blip_classifications.append(blip_classification) #changes
+            blip_classifications.append(blip_classification)
 
             human_annotation = get_annotation_by_index(annotations, count_annotation_frames - 1)
             human_annotations.append(human_annotation)
 
             is_correct = human_annotation == blip_classification
-            # if count_annotation_frames % 200: # save every 200 images to check
-            #     pil_image.save('./{count_annotation_frames}-{human_annotation}-{blip_classification}')
+            if human_annotation and not blip_classification: # save false negatives
+                pil_image.save(f'./false_negatives_leyla_prompt/{count_annotation_frames}-{human_annotation}-{blip_classification}.jpg')
             print('annotation #:',count_annotation_frames, is_correct)
-            # print('frame:', count_annotation_frames, 'human:', human_annotation, 'blip:', blip_classification)
 
     cap.release()
-
     return blip_classifications, human_annotations
 
 def get_accuracy(blip_classifications, human_annotations):
@@ -86,16 +87,14 @@ if __name__ == '__main__':
     args = argparse.ArgumentParser()
     args.add_argument("--annotation_dir", type=str, required=True)
     args.add_argument("--movie_path", type=str, required=True)
-    args.add_argument("--new_path", type=str, required=True)
     args = args.parse_args()
 
     annotation_dir = args.annotation_dir
     movie_path = args.movie_path
-    new_path = args.new_path
 
     social_nonosocial_annotations = get_annotations(annotation_dir, "social_nonsocial")
 
-    blip_classifications, human_annotations = get_annotation_lists(movie_path, new_path, social_nonosocial_annotations)
+    blip_classifications, human_annotations = get_annotation_lists(movie_path, social_nonosocial_annotations)
 
     # Print the collected annotations
     print("BLIP Classifications:", blip_classifications)

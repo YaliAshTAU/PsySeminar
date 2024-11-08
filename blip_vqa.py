@@ -11,7 +11,8 @@ def classify_social_interaction(image_path):
     image = Image.open(image_path)
     
     # Define the question
-    question = "Does this image contain social interaction?"
+    # question = "Does this image contain social interaction?"
+    question = "Is there actions or communication between two or more individuals that are directed at and contingent upon eachother?"
     
     # Process the image and question
     inputs = processor(image, question, return_tensors="pt")
@@ -22,16 +23,23 @@ def classify_social_interaction(image_path):
     
     return answer
 
-# # Path to the images folder
-# images_folder = 'images'
+def classify_images():
+    # Path to the images folder
+    images_folder = './test'
 
-# # Generate paths for images labeled 1-10
-# image_paths = [os.path.join(images_folder, f"{i}.png") for i in range(1, 11)]
+    # Get a list of all files in the images folder
+    image_files = [f for f in os.listdir(images_folder) if f.endswith('.jpg')]
 
-# # Classify each image
-# for image_path in image_paths:
-#     classification = classify_social_interaction(image_path)
-#     print(f"Image: {image_path}\nClassification: {classification}\n")
+    classifications = []
+    # Classify each image
+    for image_file in image_files:
+        image_path = os.path.join(images_folder, image_file)
+        classification = classify_social_interaction(image_path)
+        print(f"Image: {image_path}\nClassification: {classification}\n")
+        classifications.append(classification)
+    
+    print(f"Number of 'yes' classifications: {classifications.count('yes')}")
+    print(f"Number of 'no' classifications: {classifications.count('no')}")
 
 def get_blip_classifier():
     # Load the BLIP VQA model and processor
@@ -39,7 +47,8 @@ def get_blip_classifier():
     model = BlipForQuestionAnswering.from_pretrained("Salesforce/blip-vqa-base")
 
     # Define the question
-    question = "Does this image contain social interaction?"
+    # question = "Does this image contain social interaction?"
+    question = "Is there actions or communication between two or more individuals that are directed at and contingent upon eachother?"
     
     def classify(image):
         # Process the image and question
@@ -50,3 +59,5 @@ def get_blip_classifier():
         return processor.decode(out[0], skip_special_tokens=True)
     
     return classify
+
+# classify_images()

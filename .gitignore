@@ -1,0 +1,8 @@
+/false_negatives/
+/annotations/
+/__pycache__/
+/false_negatives_leyla_prompt/
+/movie.mp4
+/summer-movie.mp4
+/social_nonsocial.mat
+/add_annotations_to_movie.py
