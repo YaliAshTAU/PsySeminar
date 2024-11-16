@@ -1,4 +1,5 @@
 from transformers import BlipProcessor, BlipForQuestionAnswering
+from llmUtils import generate_captions
 from PIL import Image
 import os
 import torch
@@ -35,7 +36,7 @@ def classify_images():
     # Classify each image
     for image_file in image_files:
         image_path = os.path.join(images_folder, image_file)
-        classification = classify_social_interaction(image_path)
+        classification = classify_social_interaction(image_path) # Can use also generate_captions(image_path)
         print(f"Image: {image_path}\nClassification: {classification}\n")
         classifications.append(classification)
     

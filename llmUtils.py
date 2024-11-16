@@ -18,6 +18,6 @@ def generate_captions(image_file):
     image_bytes = image_to_bytes(image_file)
     print('Generating captions')
     captions = generate(model='llava:13b', prompt='describe this image in one sentence:', images=[image_bytes])
-    return captions
+    return captions["response"]
 
-print(generate_captions('Summer in car.png')["response"])
+print(generate_captions('Summer in car.png'))
