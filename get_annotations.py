@@ -58,7 +58,7 @@ def get_annotation_lists(movie_path, annotations, pipeline):
 
             is_correct = human_annotation == blip_classification
             if human_annotation and not blip_classification: # save false negatives
-                pil_image.save(f'./false_negatives_leyla_prompt/{count_annotation_frames}-{human_annotation}-{blip_classification}.jpg')
+                pil_image.save(f'./false_negatives_are_there_people/{count_annotation_frames}-{human_annotation}-{blip_classification}.jpg')
             print('annotation #:',count_annotation_frames, is_correct)
 
     cap.release()
