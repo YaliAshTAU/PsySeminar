@@ -20,4 +20,4 @@ def generate_captions(image_file):
     captions = generate(model='llava:13b', prompt='describe this image in one sentence:', images=[image_bytes])
     return captions["response"]
 
-print(generate_captions('Summer in car.png'))
+print(generate_captions('Pics/Summer in car.png'))
