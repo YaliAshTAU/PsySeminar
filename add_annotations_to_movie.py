@@ -31,11 +31,11 @@ def add_text_to_movie(movie_path, new_path, all_annotations):
         exit()
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fps = 25  #for summer-25 taken from https://www.nature.com/articles/s41597-020-00680-2. To get actual fps: fps= cap.get(cv2.CAP_PROP_FPS), for sherlock-24
+    fps = 24  #for summer-25 taken from https://www.nature.com/articles/s41597-020-00680-2. To get actual fps: fps= cap.get(cv2.CAP_PROP_FPS), for sherlock-24
     out_cap = cv2.VideoWriter(new_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
 
     count_seconds = 0
-    count_annotation_frames = 0
+    count_annotation_frames = 25 # delay
     end_second = 3264 # skip start credits
     end_frame = end_second * fps
     frame_count = 0

@@ -53,34 +53,36 @@ def get_blip_classifier(pipeline):
     model.to(device)
 
     # Define the questions
-    question1 = "Does this image contain social interaction?"
-    question2 = "Is there actions or communication between two or more individuals that are directed at and contingent upon each other?"
+    question1 = "Does the image contain a person or people?"
+    question2 = "Is there an action or communication between two or more individuals that is directed at and contingent upon each other?"
     
     def classify(image):
         if pipeline:
-            # Ask question2 first
-            inputs2 = processor(image, question2, return_tensors="pt").to(device)
-            out2 = model.generate(**inputs2)
-            answer2 = processor.decode(out2[0], skip_special_tokens=True).lower()
-
-            # If question2 is "no", return "no"
-            if answer2 == "no":
-                return answer2
-
-            # If question2 is "yes", ask question1 (question2 return some false positives but question1 is good at removing them)
+            # Ask question 1
             inputs1 = processor(image, question1, return_tensors="pt").to(device)
             out1 = model.generate(**inputs1)
             answer1 = processor.decode(out1[0], skip_special_tokens=True).lower()
 
-            # Return "yes" if both answers are "yes", otherwise "no"
-            return "yes" if answer1 == "yes" else "no"
+            # If there are no people, return false.
+            if answer1 == "no":
+                return "no"
+
+            # If there are people, check the social interaction prompt
+            # Ask question 2
+            inputs2 = processor(image, question2, return_tensors="pt").to(device)
+            out2 = model.generate(**inputs2)
+            answer2 = processor.decode(out2[0], skip_special_tokens=True).lower()
+
+            return "yes" if answer2 == "yes" else "no"
         else: 
             # Process the image and question
-            inputs = processor(image, question2, return_tensors="pt").to(device) 
+            inputs = processor(image, question1, return_tensors="pt").to(device) 
             
             # Get the answer
             out = model.generate(**inputs)
-            return processor.decode(out[0], skip_special_tokens=True)
+            answer = processor.decode(out[0], skip_special_tokens=True).lower()
+            print(answer)
+            return answer
     
     return classify
 
