@@ -32,7 +32,7 @@ def get_annotation_lists(movie_path, annotations, pipeline):
     start_frame = start_second * fps
     frame_count = 0
 
-    blip_classifications = []
+    classifications = []
     human_annotations = []
 
     while cap.isOpened() and count_annotation_frames < len(annotations):
@@ -50,17 +50,17 @@ def get_annotation_lists(movie_path, annotations, pipeline):
             count_annotation_frames += 1
             count_seconds = 0
             pil_image = Image.fromarray(frame)
-            blip_classification = True if get_blip_classification(pil_image) == 'yes' else False
-            blip_classifications.append(blip_classification)
+            classification = True if get_blip_classification(pil_image) == 'yes' else False
+            classifications.append(classification)
 
             human_annotation = get_annotation_by_index(annotations, count_annotation_frames - 1)
             human_annotations.append(human_annotation)
 
-            is_correct = human_annotation == blip_classification
-            if human_annotation and not blip_classification: # save false negatives
-                pil_image.save(f'./false_negatives_are_there_people/{count_annotation_frames}-{human_annotation}-{blip_classification}.jpg')
+            is_correct = human_annotation == classification
+            if human_annotation and not classification: # save false negatives
+                pil_image.save(f'./false_negatives_are_there_people/{count_annotation_frames}-{human_annotation}-{classification}.jpg')
             print('annotation #:',count_annotation_frames, is_correct)
 
     cap.release()
-    return blip_classifications, human_annotations
+    return classifications, human_annotations
 
