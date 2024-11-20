@@ -15,9 +15,8 @@ def get_annotations(ann_dir, type):
         print ('Error: missing annotation file for ', annotation_file)
     return data
 
-def get_annotation_by_index(annotations_list, index, movie):
-    delay = 25 if movie == 'sherlock' else 0
-    return annotations_list[index + delay][0] != 0
+def get_annotation_by_index(annotations_list, index):
+    return annotations_list[index][0] != 0
 
 def get_annotation_lists(movie_path, annotations, blip, pipeline, movie):
     print('getting annotations list')
@@ -31,7 +30,7 @@ def get_annotation_lists(movie_path, annotations, blip, pipeline, movie):
 
     count_seconds = 0
     start_second = 40 # skip start credits
-    count_annotation_frames = 0
+    count_annotation_frames = 25 if movie == "sherlock" else 0
     start_frame = start_second * fps
     frame_count = 0
 
