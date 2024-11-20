@@ -22,12 +22,14 @@ if __name__ == '__main__':
     args = argparse.ArgumentParser()
     args.add_argument("--annotation_dir", type=str, required=True)
     args.add_argument("--movie_path", type=str, required=True)
+    args.add_argument("--movie_name", type=str, required=True) # 'summer' or 'sherlock'
     args.add_argument("--pipeline", action='store_true', help="Enable pipeline")
     args.add_argument("--blip", action='store_true', help="Enable blip")
     args = args.parse_args()
 
     annotation_dir = args.annotation_dir
     movie_path = args.movie_path
+    movie_name = args.movie_name
     pipeline = args.pipeline
     blip = args.blip
 
@@ -36,7 +38,7 @@ if __name__ == '__main__':
     print("Starting test.py")
     social_nonsocial_annotations = get_annotations(annotation_dir, "social_nonsocial")
 
-    blip_classifications, human_annotations = get_annotation_lists(movie_path, social_nonsocial_annotations, blip, pipeline)
+    blip_classifications, human_annotations = get_annotation_lists(movie_path, social_nonsocial_annotations, blip, pipeline, movie_name)
 
     # Print the collected annotations
     print("BLIP Classifications:", blip_classifications)
