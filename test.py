@@ -17,20 +17,26 @@ def get_recall(blip_classifications, human_annotations):
 def get_f1_score(precision, recall):
     return 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
+
 if __name__ == '__main__':
     args = argparse.ArgumentParser()
     args.add_argument("--annotation_dir", type=str, required=True)
     args.add_argument("--movie_path", type=str, required=True)
-    args.add_argument("--pipeline", type=bool, required=False)
+    args.add_argument("--pipeline", action='store_true', help="Enable pipeline")
+    args.add_argument("--blip", action='store_true', help="Enable blip")
     args = args.parse_args()
 
     annotation_dir = args.annotation_dir
     movie_path = args.movie_path
     pipeline = args.pipeline
+    blip = args.blip
 
+    print("pipeline:", pipeline)
+    print("blip:", blip)
+    print("Starting test.py")
     social_nonsocial_annotations = get_annotations(annotation_dir, "social_nonsocial")
 
-    blip_classifications, human_annotations = get_annotation_lists(movie_path, social_nonsocial_annotations, pipeline)
+    blip_classifications, human_annotations = get_annotation_lists(movie_path, social_nonsocial_annotations, blip, pipeline)
 
     # Print the collected annotations
     print("BLIP Classifications:", blip_classifications)

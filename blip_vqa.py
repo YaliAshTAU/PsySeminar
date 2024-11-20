@@ -44,6 +44,7 @@ def get_blip_classifier(pipeline):
             inputs1 = processor(image, question1, return_tensors="pt").to(device)
             out1 = model.generate(**inputs1)
             answer1 = processor.decode(out1[0], skip_special_tokens=True).lower()
+            #If answer is not "yes" or "no", throw an error
 
             # If there are no people, return false.
             if answer1 == "no":
@@ -63,8 +64,8 @@ def get_blip_classifier(pipeline):
             # Get the answer
             out = model.generate(**inputs)
             answer = processor.decode(out[0], skip_special_tokens=True).lower()
-            print(answer)
             return answer
+        
     
     return classify
 

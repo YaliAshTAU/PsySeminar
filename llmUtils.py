@@ -1,25 +1,39 @@
-import io
 from PIL import Image
-import ollama
 from ollama import generate
-import os
 from io import BytesIO
 from transformers import BlipProcessor, BlipForQuestionAnswering
+import time
 
-def image_to_bytes(image_file):
+def image_to_bytes(image_input):
     print('Processing image')
-    with Image.open(image_file) as image:
-        # Convert the image to bytes
-        with io.BytesIO() as output:
-            image.save(output, format="png")  # Change the format as needed (e.g., JPEG, PNG)
-            image_bytes = output.getvalue()
-        return image_bytes
+    if isinstance(image_input, Image.Image):
+        image = image_input
+    else:
+        image = Image.open(image_input)
+    buffered = BytesIO()
+    image.save(buffered, format='JPEG')
+    return buffered.getvalue()
+
+    # with Image.open(image_file) as image:
+    #     # Convert the image to bytes
+    #     with io.BytesIO() as output:
+    #         image.save(output, format="png")  # Change the format as needed (e.g., JPEG, PNG)
+    #         image_bytes = output.getvalue()
+    #     return image_bytes
 
 def classify_using_llava(image_file, prompt='Are there people in the image? If yes, is there social interaction between the people? Answer only Yes or No'):
     image_bytes = image_to_bytes(image_file)
-    print('Generating captions')
+    print('Generating caption')
+    # Start timing
+    start_time = time.perf_counter()
     captions = generate(model='llava:13b', prompt=prompt, images=[image_bytes])
-    return captions["response"]
+    # End timing
+    end_time = time.perf_counter()
+    elapsed_time = end_time - start_time
+    print(f'Caption generated in {elapsed_time:.2f} seconds')
+    answer = captions["response"].lower()
+    print('Answer:', answer)
+    return answer
 
 def classify_using_blip(image_path):
     # Load the BLIP VQA model and processor
@@ -42,5 +56,3 @@ def classify_using_blip(image_path):
     
     return answer
 
-
-print(classify_using_llava('Pics/Summer in car.png'))
