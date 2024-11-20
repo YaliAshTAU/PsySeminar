@@ -58,7 +58,7 @@ def get_annotation_lists(movie_path, annotations, blip, pipeline, movie):
                 classification = True if classify_using_llava(pil_image) == 'yes' else False
             classifications.append(classification)
 
-            human_annotation = get_annotation_by_index(annotations, count_annotation_frames - 1, movie)
+            human_annotation = get_annotation_by_index(annotations, count_annotation_frames - 1)
             human_annotations.append(human_annotation)
 
             is_correct = human_annotation == classification
