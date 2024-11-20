@@ -16,7 +16,8 @@ def get_annotations(ann_dir, type):
     return data
 
 def get_annotation_by_index(annotations_list, index):
-    return annotations_list[index][0] != 0
+    value = int(annotations_list[index][0])
+    return value > 0
 
 def get_annotation_lists(movie_path, annotations, blip, pipeline, movie):
     print('getting annotations list')
