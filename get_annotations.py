@@ -19,7 +19,7 @@ def get_annotation_by_index(annotations_list, index):
     value = int(annotations_list[index][0])
     return value > 0
 
-def get_annotation_lists(movie_path, annotations, blip, pipeline, movie):
+def get_annotation_lists(movie_path, annotations, blip, pipeline, movie, prompt, llama):
     print('getting annotations list')
     print('number of annotations:', len(annotations))
     if blip:
@@ -56,7 +56,7 @@ def get_annotation_lists(movie_path, annotations, blip, pipeline, movie):
             if blip:
                 classification = True if get_blip_classification(pil_image) == 'yes' else False
             else:
-                classification = True if classify_using_llava(pil_image) == 'yes' else False
+                classification = True if classify_using_llava(pil_image, prompt, llama) == 'yes' else False
             classifications.append(classification)
 
             human_annotation = get_annotation_by_index(annotations, count_annotation_frames - 1)
@@ -65,7 +65,7 @@ def get_annotation_lists(movie_path, annotations, blip, pipeline, movie):
             is_correct = human_annotation == classification
             # if human_annotation and not classification: # save false negatives
             #     pil_image.save(f'./false_negatives_are_there_people/{count_annotation_frames}-{human_annotation}-{classification}.jpg')
-            print('annotation #:',count_annotation_frames, is_correct)
+            # print('annotation #:',count_annotation_frames, is_correct)
 
     cap.release()
     return classifications, human_annotations
