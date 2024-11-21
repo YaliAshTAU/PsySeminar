@@ -1,9 +1,9 @@
+import base64
 from PIL import Image
-from ollama import generate
 from io import BytesIO
-from transformers import BlipProcessor, BlipForQuestionAnswering
 import time
 import base64
+import requests
 import requests
 
 def image_to_bytes(image_input):
