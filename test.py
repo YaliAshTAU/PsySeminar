@@ -36,9 +36,9 @@ if __name__ == '__main__':
     # print("blip:", blip)
     # print("Starting test.py")
 
-    annotation_dirs = ['Sherlock/', 'Summer/']
-    movie_paths = ['Sherlock.mp4', 'Summer.mp4']
-    movie_names = ['sherlock', 'summer']
+    annotation_dirs = ['Summer/', 'Sherlock/']
+    movie_paths = ['Summer.mp4', 'Sherlock.mp4']
+    movie_names = ['summer', 'sherlock']
     llamas = [True, False]
     pipeline = False
     blip = False
