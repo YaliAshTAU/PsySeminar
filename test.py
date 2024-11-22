@@ -55,34 +55,34 @@ if __name__ == '__main__':
         annotation_dir = annotation_dirs[i]
         movie_path = movie_paths[i]
         movie_name = movie_names[i]
-        for llama in llamas:
-            for prompt in prompts:
-                social_nonsocial_annotations = get_annotations(annotation_dir, "social_nonsocial")
-                # print("Social Nonsocial Annotations:", social_nonsocial_annotations.tolist())
+        # for llama in llamas:
+        for prompt in prompts:
+            social_nonsocial_annotations = get_annotations(annotation_dir, "social_nonsocial")
+            # print("Social Nonsocial Annotations:", social_nonsocial_annotations.tolist())
 
-                model_classifications, human_annotations = get_annotation_lists(movie_path, social_nonsocial_annotations, blip, pipeline, movie_name, prompt, llama)
+            model_classifications, human_annotations = get_annotation_lists(movie_path, social_nonsocial_annotations, blip, pipeline, movie_name, prompt, llama=False)
 
-                # Print the collected annotations
-                print("Model Classifications:", model_classifications)
-                print("Human Annotations:", human_annotations)
+            # Print the collected annotations
+            print("Model Classifications:", model_classifications)
+            print("Human Annotations:", human_annotations)
 
-                # Calculate metrics
-                accuracy = get_accuracy(model_classifications, human_annotations)
-                precision = get_precision(model_classifications, human_annotations)
-                recall = get_recall(model_classifications, human_annotations)
-                f1_score = get_f1_score(precision, recall)
+            # Calculate metrics
+            accuracy = get_accuracy(model_classifications, human_annotations)
+            precision = get_precision(model_classifications, human_annotations)
+            recall = get_recall(model_classifications, human_annotations)
+            f1_score = get_f1_score(precision, recall)
 
-                # Print results
-                print('Accuracy:', accuracy)
-                print('Precision:', precision)
-                print('Recall:', recall)
-                print('F1 Score:', f1_score)
+            # Print results
+            print('Accuracy:', accuracy)
+            print('Precision:', precision)
+            print('Recall:', recall)
+            print('F1 Score:', f1_score)
 
-                results.append({
-                    'accuracy': accuracy,
-                    'precision': precision,
-                    'recall': recall,
-                    'f1_score': f1_score
-                })
+            results.append({
+                'accuracy': accuracy,
+                'precision': precision,
+                'recall': recall,
+                'f1_score': f1_score
+            })
 
     print(results)

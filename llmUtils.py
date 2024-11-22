@@ -26,7 +26,7 @@ def image_to_base64(image_input):
     image_bytes = image_to_bytes(image_input)
     return base64.b64encode(image_bytes).decode('utf-8')
 
-def query_ollama(model="llava:13b", prompt="", images=None, url="https://b801-34-16-230-149.ngrok-free.app/api/generate", stream=False):
+def query_ollama(model="llava:13b", prompt="", images=None, url="https://7a89-34-138-240-87.ngrok-free.app/api/generate", stream=False):
     """
     Sends a prompt and image to the Ollama server and retrieves the response.
     """
@@ -75,7 +75,7 @@ def classify_using_llava(image_file, prompt='describe this photo in 2 sentences'
     if llama:
         # Query for llama model
         llama_prompt = "For this image caption:" + answer + "," + prompt
-        captions = query_ollama(model='llama3', prompt=llama_prompt, url='https://f3b1-35-187-248-59.ngrok-free.app/api/generate') # generate(model='llava:13b', prompt=prompt, images=[image_base64])
+        captions = query_ollama(model='llama3', prompt=llama_prompt, url='https://7919-34-16-167-54.ngrok-free.app//api/generate') # generate(model='llava:13b', prompt=prompt, images=[image_base64])
         # print('llama response:', captions)
         # End query for llama model
     # End timing

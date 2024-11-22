@@ -65,7 +65,7 @@ def get_annotation_lists(movie_path, annotations, blip, pipeline, movie, prompt,
             is_correct = human_annotation == classification
             # if human_annotation and not classification: # save false negatives
             #     pil_image.save(f'./false_negatives_are_there_people/{count_annotation_frames}-{human_annotation}-{classification}.jpg')
-            # print('annotation #:',count_annotation_frames, is_correct)
+            print('annotation #:',count_annotation_frames, is_correct)
 
     cap.release()
     return classifications, human_annotations
