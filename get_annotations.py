@@ -27,10 +27,10 @@ def get_annotation_lists(movie_path, annotations, blip, pipeline, movie, prompt,
     cap = cv2.VideoCapture(movie_path)
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fps = 25  #taken from https://www.nature.com/articles/s41597-020-00680-2. To get actual fps: fps= cap.get(cv2.CAP_PROP_FPS)
+    fps = 25 if movie == "summer" else 24  #taken from https://www.nature.com/articles/s41597-020-00680-2. To get actual fps: fps= cap.get(cv2.CAP_PROP_FPS)
 
     count_seconds = 0
-    start_second = 40 # skip start credits
+    start_second = 40 if movie == "summer" else 0 # skip start credits
     count_annotation_frames = 25 if movie == "sherlock" else 0
     start_frame = start_second * fps
     frame_count = 0
@@ -49,7 +49,7 @@ def get_annotation_lists(movie_path, annotations, blip, pipeline, movie, prompt,
         
         count_seconds += 1 / fps
         # every 3 seconds, increase the annotation frame
-        if count_seconds >= 3:
+        if count_seconds >= (3 if movie == "summer" else 1.5):
             count_annotation_frames += 1
             count_seconds = 0
             pil_image = Image.fromarray(frame)
@@ -61,6 +61,7 @@ def get_annotation_lists(movie_path, annotations, blip, pipeline, movie, prompt,
 
             human_annotation = get_annotation_by_index(annotations, count_annotation_frames - 1)
             human_annotations.append(human_annotation)
+            print('human_annotation: ', human_annotation, ' classification: ', classification)
 
             is_correct = human_annotation == classification
             # if human_annotation and not classification: # save false negatives

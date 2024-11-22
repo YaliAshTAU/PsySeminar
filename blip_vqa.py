@@ -1,29 +1,5 @@
 from transformers import BlipProcessor, BlipForQuestionAnswering
-from llmUtils import classify_using_llava, classify_using_blip
-from PIL import Image
-import os
 import torch
-
-def classify_images(blip=True):
-    # Path to the images folder
-    images_folder = './test'
-
-    # Get a list of all files in the images folder
-    image_files = [f for f in os.listdir(images_folder) if f.endswith('.jpg')]
-
-    classifications = []
-    # Classify each image
-    for image_file in image_files:
-        image_path = os.path.join(images_folder, image_file)
-        if blip:
-            classification = classify_using_blip(image_path)
-        else:
-            classification = classify_using_llava(image_path)
-        print(f"Image: {image_path}\nClassification: {classification}\n")
-        classifications.append(classification)
-    
-    print(f"Number of 'yes' classifications: {classifications.count('yes')}")
-    print(f"Number of 'no' classifications: {classifications.count('no')}")
 
 def get_blip_classifier(pipeline):
     # Load the BLIP VQA model and processor
@@ -59,7 +35,7 @@ def get_blip_classifier(pipeline):
             return "yes" if answer2 == "yes" else "no"
         else: 
             # Process the image and question
-            inputs = processor(image, question1, return_tensors="pt").to(device) 
+            inputs = processor(image, question2, return_tensors="pt").to(device) 
             
             # Get the answer
             out = model.generate(**inputs)
