@@ -1,8 +1,7 @@
 import cv2
 import scipy.io
 from PIL import Image
-from blip_vqa import get_blip_classifier
-from llmUtils import classify_using_llava
+from llmUtils import classify_using_llava, get_blip_classifier, classify_using_blip
 
 def get_annotations(ann_dir, type):
     print('getting annotations')
@@ -23,22 +22,23 @@ def get_annotation_lists(movie_path, annotations, blip, pipeline, movie, prompt,
     print('getting annotations list')
     print('number of annotations:', len(annotations))
     if blip:
-        get_blip_classification = get_blip_classifier(pipeline)
+        processor, model = get_blip_classifier()
     cap = cv2.VideoCapture(movie_path)
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = 25 if movie == "summer" else 24  #taken from https://www.nature.com/articles/s41597-020-00680-2. To get actual fps: fps= cap.get(cv2.CAP_PROP_FPS)
 
     count_seconds = 0
-    start_second = 40 if movie == "summer" else 0 # skip start credits
+    start_second = 41 if movie == "summer" else 0 # skip start credits
     count_annotation_frames = 25 if movie == "sherlock" else 0
     start_frame = start_second * fps
+    end_frame = 920 if movie == "sherlock" else len(annotations)
     frame_count = 0
 
     classifications = []
     human_annotations = []
 
-    while cap.isOpened() and count_annotation_frames < len(annotations):
+    while cap.isOpened() and count_annotation_frames < end_frame:
         ret, frame = cap.read()
         if not ret:
             break
@@ -54,14 +54,14 @@ def get_annotation_lists(movie_path, annotations, blip, pipeline, movie, prompt,
             count_seconds = 0
             pil_image = Image.fromarray(frame)
             if blip:
-                classification = True if get_blip_classification(pil_image) == 'yes' else False
+                classification = True if classify_using_blip(pil_image, processor, model, pipeline) == 'yes' else False
             else:
                 classification = True if classify_using_llava(pil_image, prompt, llama) == 'yes' else False
             classifications.append(classification)
 
             human_annotation = get_annotation_by_index(annotations, count_annotation_frames - 1)
             human_annotations.append(human_annotation)
-            print('human_annotation: ', human_annotation, ' classification: ', classification)
+            # print('human_annotation: ', human_annotation, ' classification: ', classification)
 
             is_correct = human_annotation == classification
             # if human_annotation and not classification: # save false negatives

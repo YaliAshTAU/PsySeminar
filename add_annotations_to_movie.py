@@ -1,4 +1,4 @@
-# Shiri's code to play the movie with the annotations
+# Code to play the movie with the annotations
 import cv2
 import argparse
 import scipy.io

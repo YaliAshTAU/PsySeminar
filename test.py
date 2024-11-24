@@ -18,35 +18,33 @@ def get_f1_score(precision, recall):
     return 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
 if __name__ == '__main__':
-    # args = argparse.ArgumentParser()
-    # args.add_argument("--annotation_dir", type=str, required=True)
-    # args.add_argument("--movie_path", type=str, required=True)
-    # args.add_argument("--movie_name", type=str, required=True) # 'summer' or 'sherlock'
-    # args.add_argument("--pipeline", action='store_true', help="Enable pipeline")
-    # args.add_argument("--blip", action='store_true', help="Enable blip")
-    # args = args.parse_args()
+    args = argparse.ArgumentParser()
+    args.add_argument("--annotation_dir", type=str, required=True)
+    args.add_argument("--movie_path", type=str, required=True)
+    args.add_argument("--movie_name", type=str, required=True) # 'summer' or 'sherlock'
+    args.add_argument("--pipeline", action='store_true', help="Enable pipeline")
+    args.add_argument("--blip", action='store_true', help="Enable blip")
+    args = args.parse_args()
 
-    # annotation_dir = args.annotation_dir
-    # movie_path = args.movie_path
-    # movie_name = args.movie_name
-    # pipeline = args.pipeline
-    # blip = args.blip
+    annotation_dir = args.annotation_dir
+    movie_path = args.movie_path
+    movie_name = args.movie_name
+    pipeline = args.pipeline
+    blip = args.blip
 
-    # print("pipeline:", pipeline)
-    # print("blip:", blip)
-    # print("Starting test.py")
+    print("Starting test.py")
 
-    annotation_dirs = ['Summer/', 'Sherlock/']
-    movie_paths = ['Summer.mp4', 'Sherlock.mp4']
-    movie_names = ['summer', 'sherlock']
-    llamas = [True, False]
-    pipeline = False
-    blip = False
+    annotation_dirs = ['Sherlock/', 'Summer/']
+    movie_paths = ['Sherlock.mp4', 'Summer.mp4']
+    movie_names = ['sherlock', 'summer']
+    llamas = [False, True]
+    pipeline = True
+    blip = True
 
-    prompts = ['Analyze the image and determine if there is social interaction present. Social interaction is defined as an action or communication between two or more individuals that is directed at and contingent upon each other. Respond with "yes" if there is social interaction, or "no" if there is not. Do not provide any additional text.',
+    prompts = [#'Analyze the image and determine if there is social interaction present. Social interaction is defined as an action or communication between two or more individuals that is directed at and contingent upon each other. Respond with "yes" if there is social interaction, or "no" if there is not. Do not provide any additional text.',
                 'In this image, Is there actions or communication between two or more individuals that are directed at and contingent upon eachother?',
-                # 'Are there people in the image? If yes, is there social interaction between the people? Answer only Yes or No',
-                # 'In the image, is there direct social interaction between people in the image? Answer only Yes or No'
+                 'Are there people in the image? If yes, is there social interaction between the people? Answer only Yes or No',
+                 'In the image, is there direct social interaction between people in the image? Answer only Yes or No'
                 ]
 
     results = []
@@ -56,33 +54,33 @@ if __name__ == '__main__':
         movie_path = movie_paths[i]
         movie_name = movie_names[i]
         # for llama in llamas:
-        for prompt in prompts:
-            social_nonsocial_annotations = get_annotations(annotation_dir, "social_nonsocial")
-            # print("Social Nonsocial Annotations:", social_nonsocial_annotations.tolist())
+            # for prompt in prompts:
+        social_nonsocial_annotations = get_annotations(annotation_dir, "social_nonsocial")
+        # print("Social Nonsocial Annotations:", social_nonsocial_annotations.tolist())
 
-            model_classifications, human_annotations = get_annotation_lists(movie_path, social_nonsocial_annotations, blip, pipeline, movie_name, prompt, llama=False)
+        model_classifications, human_annotations = get_annotation_lists(movie_path, social_nonsocial_annotations, blip, pipeline, movie_name, prompt = "", llama=False)
 
-            # Print the collected annotations
-            print("Model Classifications:", model_classifications)
-            print("Human Annotations:", human_annotations)
+        # Print the collected annotations
+        print("Model Classifications:", model_classifications)
+        print("Human Annotations:", human_annotations)
 
-            # Calculate metrics
-            accuracy = get_accuracy(model_classifications, human_annotations)
-            precision = get_precision(model_classifications, human_annotations)
-            recall = get_recall(model_classifications, human_annotations)
-            f1_score = get_f1_score(precision, recall)
+        # Calculate metrics
+        accuracy = get_accuracy(model_classifications, human_annotations)
+        precision = get_precision(model_classifications, human_annotations)
+        recall = get_recall(model_classifications, human_annotations)
+        f1_score = get_f1_score(precision, recall)
 
-            # Print results
-            print('Accuracy:', accuracy)
-            print('Precision:', precision)
-            print('Recall:', recall)
-            print('F1 Score:', f1_score)
+        # Print results
+        print('Accuracy:', accuracy)
+        print('Precision:', precision)
+        print('Recall:', recall)
+        print('F1 Score:', f1_score)
 
-            results.append({
-                'accuracy': accuracy,
-                'precision': precision,
-                'recall': recall,
-                'f1_score': f1_score
-            })
+        results.append({
+            'accuracy': accuracy,
+            'precision': precision,
+            'recall': recall,
+            'f1_score': f1_score
+        })
 
     print(results)

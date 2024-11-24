@@ -4,7 +4,8 @@ from io import BytesIO
 import time
 import base64
 import requests
-import requests
+import torch
+from transformers import BlipProcessor, BlipForQuestionAnswering
 
 def image_to_bytes(image_input):
     """
@@ -26,15 +27,15 @@ def image_to_base64(image_input):
     image_bytes = image_to_bytes(image_input)
     return base64.b64encode(image_bytes).decode('utf-8')
 
-def query_ollama(model="llava:13b", prompt="", images=None, url="https://7a89-34-138-240-87.ngrok-free.app/api/generate", stream=False):
+def query_ollama(model="llava:13b", prompt="", images=None, url="https://7443-35-247-153-127.ngrok-free.app/api/generate", stream=False):
     """
     Sends a prompt and image to the Ollama server and retrieves the response.
     """
     if images is None:
         images = []
     
-    headers = {"Content-Type": "application/json"}
-    if model == "llava:13b":
+    headers = {"Content-Type": "application/json"} # "Authorization": "Bearer 2QYewyTfJQyrqq25GUOdzXgyUHp_51c8WpyiTvBFCtnmCrnss"
+    if model == "llava:13b": 
         payload = {
             "model": model,
             "prompt": prompt,
@@ -58,7 +59,7 @@ def query_ollama(model="llava:13b", prompt="", images=None, url="https://7a89-34
     except ValueError:
         return "Error: Unable to parse JSON response."
 
-def classify_using_llava(image_file, prompt='describe this photo in 2 sentences', llama = False): #Are there people in the image? If yes, is there social interaction between the people? Answer only Yes or No
+def classify_using_llava(image_file, prompt='describe this image shortly', llama = False): #Are there people in the image? If yes, is there social interaction between the people? Answer only Yes or No
     """
     Classifies an image using the LLAVA model and answers the given prompt.
     """
@@ -67,15 +68,15 @@ def classify_using_llava(image_file, prompt='describe this photo in 2 sentences'
     # Start timing
     start_time = time.perf_counter()
     if llama:
-        captions = query_ollama(model='llava:13b', prompt="Describe this image in 2 sentences", images=[image_base64]) # generate(model='llava:13b', prompt=prompt, images=[image_base64])
+        captions = query_ollama(model='llava:13b', prompt="Describe this image shortly", images=[image_base64]) # generate(model='llava:13b', prompt=prompt, images=[image_base64])
     else:
         captions = query_ollama(model='llava:13b', prompt=prompt, images=[image_base64])
-    # print('caption:', captions["response"])
+    print('caption:', captions)
     answer = captions["response"].lower()
     if llama:
         # Query for llama model
         llama_prompt = "For this image caption:" + answer + "," + prompt
-        captions = query_ollama(model='llama3', prompt=llama_prompt, url='https://7919-34-16-167-54.ngrok-free.app//api/generate') # generate(model='llava:13b', prompt=prompt, images=[image_base64])
+        captions = query_ollama(model='llama3', prompt=llama_prompt) # generate(model='llava:13b', prompt=prompt, images=[image_base64])
         # print('llama response:', captions)
         # End query for llama model
     # End timing
@@ -91,24 +92,49 @@ def classify_using_llava(image_file, prompt='describe this photo in 2 sentences'
     # print('Answer:', answer)
     return answer
 
-def classify_using_blip(image_path):
+def get_blip_classifier():
     # Load the BLIP VQA model and processor
     processor = BlipProcessor.from_pretrained("Salesforce/blip-vqa-base")
     model = BlipForQuestionAnswering.from_pretrained("Salesforce/blip-vqa-base")
-    
-    # Open the image file
-    image = Image.open(image_path)
-    
-    # Define the question
-    # question = "Does this image contain social interaction?"
-    question = "Is there actions or communication between two or more individuals that are directed at and contingent upon eachother?"
-    
-    # Process the image and question
-    inputs = processor(image, question, return_tensors="pt")
-    
-    # Get the answer
-    out = model.generate(**inputs)
-    answer = processor.decode(out[0], skip_special_tokens=True)
-    
-    return answer
 
+    # Move the model to GPU if available
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+    return processor, model
+
+
+def classify_using_blip(image, processor, model, pipeline=True):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    question1 = "Are there any people, human beings or faces in the image? answer only Yes or No"
+    question2 = "Is there direct social interaction between people in the image? Answer only Yes or No" # "Is there an action or communication between two or more individuals that is directed at and contingent upon each other? answer only Yes or No"
+    if pipeline:
+        # Ask question 1
+        inputs1 = processor(image, question1, return_tensors="pt").to(device)
+        out1 = model.generate(**inputs1)
+        answer1 = processor.decode(out1[0], skip_special_tokens=True).lower()
+        # print("Answer 1:", answer1)
+        #If answer is not "yes" or "no", throw an error
+
+        # If there are no people, return false.
+        if "yes" not in answer1:
+            print("Answer 1:", answer1)
+            return "no"
+
+        # If there are people, check the social interaction prompt
+        # Ask question 2
+        inputs2 = processor(image, question2, return_tensors="pt").to(device)
+        out2 = model.generate(**inputs2)
+        answer2 = processor.decode(out2[0], skip_special_tokens=True).lower()
+        print("Answer 2:", answer2)
+
+        return "yes" if "yes" in answer2 else "no"
+    
+    else: 
+        # Process the image and question
+        inputs = processor(image, question2, return_tensors="pt").to(device) 
+        # Get the answer
+        out = model.generate(**inputs)
+        answer = processor.decode(out[0], skip_special_tokens=True).lower()
+        return answer
+        
+    
